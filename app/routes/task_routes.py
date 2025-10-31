@@ -30,7 +30,6 @@ def get_all_tasks():
     query = db.select(Task)
 
     #sorting will be here
-
     query = query.order_by(Task.id)
     tasks = db.session.scalars(query)
 
@@ -38,7 +37,6 @@ def get_all_tasks():
     for task in tasks:
         tasks_response.append(task.to_dict())
     return tasks_response
-    
 
 # GET obe task
 @bp.get("<task_id>")
@@ -46,3 +44,27 @@ def get_one_task(task_id):
     task = validate_model(Task, task_id)
 
     return make_response(task.to_dict(), 200)
+
+# PUT one task
+@bp.put("/<task_id>")
+def update_one_task(task_id):
+    task = validate_model(Task, task_id)
+    request_body = request.get_json()
+
+    task.title = request_body["title"]
+    task.description = request_body["description"]
+    task.completed_at = request_body.get("completed_at", None)
+
+    db.session.commit()
+
+    return make_response(task.to_dict(), 200)
+
+
+# DELETE one task
+@bp.delete("/<task_id>")
+def delete_one_task(task_id):
+    task = validate_model(Task, task_id)
+    db.session.delete(task)
+    db.session.commit()
+
+    return Response(status=204, mimetype="application/json")
