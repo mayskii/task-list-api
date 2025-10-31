@@ -39,7 +39,7 @@ def get_all_tasks():
     return tasks_response
 
 # GET obe task
-@bp.get("<task_id>")
+@bp.get("/<task_id>")
 def get_one_task(task_id):
     task = validate_model(Task, task_id)
 
@@ -57,7 +57,7 @@ def update_one_task(task_id):
 
     db.session.commit()
 
-    return make_response(task.to_dict(), 200)
+    return Response(status=204, mimetype="application/json")
 
 
 # DELETE one task
