@@ -185,16 +185,14 @@ def test_update_task(client, one_task):
         "description": "Updated Test Description",
     })
 
-    # Assert
-    assert response.status_code == 204
-
     query = db.select(Task).where(Task.id == 1)
     task = db.session.scalar(query)
 
+    # Assert
+    assert response.status_code == 204
     assert task.title == "Updated Task Title"
     assert task.description == "Updated Test Description"
     assert task.completed_at == None
-
 
 
 # @pytest.mark.skip(reason="No way to test this feature yet")
