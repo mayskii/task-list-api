@@ -1,7 +1,7 @@
 from flask import Blueprint, make_response, abort, request, Response
 from app.models.goal import Goal
 from app.models.task import Task
-from .route_utilities import validate_model, create_model
+from .route_utilities import validate_model, create_model, apply_sorting
 from datetime import datetime
 from ..db import db
 
@@ -18,22 +18,10 @@ def create_goal():
 def get_all_goals():
 
     query = db.select(Goal)
-
-    sort_order = request.args.get("sort")
-
-    if sort_order == "asc":
-        query = query.order_by(Goal.title.asc())
-    elif sort_order == "desc":
-        query = query.order_by(Goal.title.desc())
-    else:
-        query = query.order_by(Goal.id)
+    query = apply_sorting(query, Goal)
 
     goals = db.session.scalars(query)
-
-    goals_response = []
-    for goal in goals:
-        goals_response.append(goal.to_dict())
-    return goals_response
+    return [goal.to_dict() for goal in goals]
 
 # GET obe goal
 @bp.get("/<goal_id>")
