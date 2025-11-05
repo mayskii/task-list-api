@@ -1,6 +1,6 @@
 from flask import Blueprint, make_response, abort, request, Response
 from app.models.task import Task
-from .route_utilities import validate_model
+from .route_utilities import validate_model, create_model
 from datetime import datetime
 from ..db import db
 import requests
@@ -13,18 +13,8 @@ bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
 @bp.post("")
 def create_task():
     request_body = request.get_json()
+    return create_model(Task, request_body)
 
-    try:
-        new_task = Task.from_dict(request_body)
-
-    except KeyError:
-        response = {"details": "Invalid data"}
-        abort(make_response(response, 400))
-
-    db.session.add(new_task)
-    db.session.commit()
-
-    return make_response(new_task.to_dict(), 201)
 
 # GET all tasks
 @bp.get("")
