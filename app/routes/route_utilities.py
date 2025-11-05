@@ -1,4 +1,4 @@
-from flask import abort, make_response
+from flask import abort, make_response, request
 from ..db import db
 
 def validate_model(cls, model_id):
@@ -22,10 +22,19 @@ def create_model(cls, model_data):
         new_model = cls.from_dict(model_data)
         
     except KeyError as error:
-        response = {"message": f"Invalid request: missing {error.args[0]}"}
-        abort(make_response(response, 400))
+        abort(make_response({"details": "Invalid data"}, 400))
     
     db.session.add(new_model)
     db.session.commit()
 
     return new_model.to_dict(), 201
+
+def apply_sorting(query, cls):
+    sort_order = request.args.get("sort")
+
+    if sort_order == "asc":
+        return query.order_by(cls.title.asc())
+    elif sort_order == "desc":
+        return query.order_by(cls.title.desc())
+    else:
+        return query.order_by(cls.id)

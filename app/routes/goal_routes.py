@@ -1,7 +1,7 @@
 from flask import Blueprint, make_response, abort, request, Response
 from app.models.goal import Goal
 from app.models.task import Task
-from .route_utilities import validate_model
+from .route_utilities import validate_model, create_model, apply_sorting
 from datetime import datetime
 from ..db import db
 
@@ -11,40 +11,17 @@ bp = Blueprint("goal_bp", __name__, url_prefix="/goals")
 @bp.post("")
 def create_goal():
     request_body = request.get_json()
-
-    try:
-        new_goal = Goal.from_dict(request_body)
-
-    except KeyError:
-        response = {"details": "Invalid data"}
-        abort(make_response(response, 400))
-
-    db.session.add(new_goal)
-    db.session.commit()
-
-    return make_response(new_goal.to_dict(), 201)
+    return create_model(Goal, request_body)
 
 # GET all goals
 @bp.get("")
 def get_all_goals():
 
     query = db.select(Goal)
-
-    sort_order = request.args.get("sort")
-
-    if sort_order == "asc":
-        query = query.order_by(Goal.title.asc())
-    elif sort_order == "desc":
-        query = query.order_by(Goal.title.desc())
-    else:
-        query = query.order_by(Goal.id)
+    query = apply_sorting(query, Goal)
 
     goals = db.session.scalars(query)
-
-    goals_response = []
-    for goal in goals:
-        goals_response.append(goal.to_dict())
-    return goals_response
+    return [goal.to_dict() for goal in goals]
 
 # GET obe goal
 @bp.get("/<goal_id>")
